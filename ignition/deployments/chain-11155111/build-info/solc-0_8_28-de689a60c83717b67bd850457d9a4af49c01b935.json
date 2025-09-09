@@ -1,0 +1,45 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-de689a60c83717b67bd850457d9a4af49c01b935",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/tokenSwap.sol": "project/contracts/tokenSwap.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IERC20.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\r\npragma solidity ^0.8.28;\r\n\r\ninterface IERC20 {\r\n    function balanceOf(address tokenHolder) external view returns (uint256);\r\n    function transfer(address recipient, uint256 amount) external returns (bool);\r\n    function transferFrom(\r\n        address owner,\r\n        address spender,\r\n        uint256 amount\r\n    ) external returns (bool);\r\n    function allowance(\r\n        address owner,\r\n        address spender\r\n    ) external view returns (uint256);\r\n    function approve(address spender, uint256 amount) external;\r\n    function name() external view returns (string memory);\r\n    function symbol() external view returns (string memory);\r\n    function mint(address reciever, uint256 amount) external;\r\n}\r\n"
+      },
+      "project/contracts/lib/events.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\r\npragma solidity ^0.8.28;\r\n\r\nlibrary Events {\r\n    event Transfer(\r\n        address indexed sender,\r\n        address indexed reciepient,\r\n        uint256 indexed amount\r\n    );\r\n    event Approve(\r\n        address indexed owner,\r\n        address indexed spender,\r\n        uint256 amount\r\n    );\r\n    event TransferFrom(\r\n        address indexed owner,\r\n        address indexed spender,\r\n        uint256 amount\r\n    );\r\n    event Swap(\r\n        address indexed from,\r\n        address indexed to,\r\n        address indexed spender,\r\n        uint amount\r\n    );\r\n}\r\n"
+      },
+      "project/contracts/tokenSwap.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\r\npragma solidity ^0.8.28;\r\n\r\nimport {IERC20} from \"./interfaces/IERC20.sol\";\r\nimport {Events} from \"./lib/events.sol\";\r\n\r\ncontract TokenSwap {\r\n    address public tokenA;\r\n    address public tokenB;\r\n\r\n    uint256 public rateAB;\r\n    uint256 public rateBA;\r\n\r\n    constructor(\r\n        address _tokenA,\r\n        address _tokenB,\r\n        uint256 _rateAB,\r\n        uint256 _rateBA\r\n    ) {\r\n        tokenA = _tokenA;\r\n        tokenB = _tokenB;\r\n        rateAB = _rateAB;\r\n        rateBA = _rateBA;\r\n    }\r\n\r\n    function swapAtoB(uint256 _amountA) external {\r\n        require(_amountA > 0, \"Amount must be greater than 0\");\r\n\r\n        uint256 _amountB = (_amountA * rateAB) / 100;\r\n\r\n        require(\r\n            IERC20(tokenB).balanceOf(address(this)) >= _amountB,\r\n            \"Insufficient tokenB liquidity\"\r\n        );\r\n\r\n        require(\r\n            IERC20(tokenA).transferFrom(msg.sender, address(this), _amountA),\r\n            \"TokenA transfer failed\"\r\n        );\r\n\r\n        require(\r\n            IERC20(tokenB).transfer(msg.sender, _amountB),\r\n            \"TokenB transfer failed\"\r\n        );\r\n\r\n        emit Events.Swap(tokenA, tokenB, msg.sender, _amountA);\r\n    }\r\n\r\n    function swapBtoA(uint256 _amountB) external {\r\n        require(_amountB > 0, \"Amount must be greater than 0\");\r\n\r\n        uint256 _amountA = (_amountB * rateBA) / 100;\r\n\r\n        require(\r\n            IERC20(tokenA).balanceOf(address(this)) >= _amountA,\r\n            \"Insufficient tokenA liquidity\"\r\n        );\r\n\r\n        require(\r\n            IERC20(tokenB).transferFrom(msg.sender, address(this), _amountB),\r\n            \"TokenB transfer failed\"\r\n        );\r\n\r\n        require(\r\n            IERC20(tokenA).transfer(msg.sender, _amountA),\r\n            \"TokenA transfer failed\"\r\n        );\r\n\r\n        emit Events.Swap(tokenB, tokenA, msg.sender, _amountB);\r\n    }\r\n\r\n    function balanceOfA(\r\n        address _accountAddress\r\n    ) external view returns (uint256) {\r\n        address target = _accountAddress == address(0)\r\n            ? msg.sender\r\n            : _accountAddress;\r\n        return IERC20(tokenA).balanceOf(target);\r\n    }\r\n\r\n    function balanceOfB(\r\n        address _accountAddress\r\n    ) external view returns (uint256) {\r\n        address target = _accountAddress == address(0)\r\n            ? msg.sender\r\n            : _accountAddress;\r\n        return IERC20(tokenB).balanceOf(target);\r\n    }\r\n\r\n    function contractBalances()\r\n        external\r\n        view\r\n        returns (uint256 balanceA, uint256 balanceB)\r\n    {\r\n        balanceA = IERC20(tokenA).balanceOf(address(this));\r\n        balanceB = IERC20(tokenB).balanceOf(address(this));\r\n    }\r\n}\r\n"
+      }
+    }
+  }
+}
