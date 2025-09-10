@@ -1,0 +1,48 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-5edc62921c2d4ddce9e5aa2967d488dc4bc2b834",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/TokenB.sol": "project/contracts/TokenB.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IERC20.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\r\npragma solidity ^0.8.28;\r\n\r\ninterface IERC20 {\r\n    function balanceOf(address tokenHolder) external view returns (uint256);\r\n    function transfer(address recipient, uint256 amount) external returns (bool);\r\n    function transferFrom(\r\n        address owner,\r\n        address spender,\r\n        uint256 amount\r\n    ) external returns (bool);\r\n    function allowance(\r\n        address owner,\r\n        address spender\r\n    ) external view returns (uint256);\r\n    function approve(address spender, uint256 amount) external;\r\n    function name() external view returns (string memory);\r\n    function symbol() external view returns (string memory);\r\n    function mint(address reciever, uint256 amount) external;\r\n}\r\n"
+      },
+      "project/contracts/lib/events.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\r\npragma solidity ^0.8.28;\r\n\r\nlibrary Events {\r\n    event Transfer(\r\n        address indexed sender,\r\n        address indexed reciepient,\r\n        uint256 indexed amount\r\n    );\r\n    event Approve(\r\n        address indexed owner,\r\n        address indexed spender,\r\n        uint256 amount\r\n    );\r\n    event TransferFrom(\r\n        address indexed owner,\r\n        address indexed spender,\r\n        uint256 amount\r\n    );\r\n    event Swap(\r\n        address indexed from,\r\n        address indexed to,\r\n        address indexed spender,\r\n        uint amount\r\n    );\r\n}\r\n"
+      },
+      "project/contracts/TokenB.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\r\npragma solidity ^0.8.28;\r\n\r\nimport \"./tokenContract.sol\";\r\n\r\ncontract TokenB is TokenContract {\r\n    constructor() TokenContract(\"Token B\", \"TKB\") {}\r\n}\r\n"
+      },
+      "project/contracts/tokenContract.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\r\npragma solidity ^0.8.28;\r\n\r\nimport {IERC20} from \"./interfaces/IERC20.sol\";\r\nimport {Events} from \"./lib/events.sol\";\r\n\r\ncontract TokenContract {\r\n    string tokenName;\r\n    string tokenSymbol;\r\n\r\n    mapping(address => uint256) balances;\r\n    mapping(address => mapping(address => uint256)) allowances;\r\n\r\n    constructor(string memory _tokenName, string memory _tokenSymbol) {\r\n        tokenName = _tokenName;\r\n        tokenSymbol = _tokenSymbol;\r\n    }\r\n\r\n    function balanceOf(address tokenHolder) external view returns (uint256) {\r\n        return balances[tokenHolder];\r\n    }\r\n\r\n    function transfer(address recipient, uint256 amount) external returns (bool) {\r\n        require(recipient != address(0), \"Invalid address zero detected\");\r\n        require(amount > 0, \"Amount must be greater than zero\");\r\n        require(balances[msg.sender] >= amount, \"Insufficient balance\");\r\n\r\n        balances[msg.sender] -= amount;\r\n        balances[recipient] += amount;\r\n\r\n        emit Events.Transfer(msg.sender, recipient, amount);\r\n        return true;\r\n    }\r\n\r\n    function transferFrom(\r\n        address owner,\r\n        address spender,\r\n        uint256 amount\r\n    ) external returns (bool) {\r\n        require(owner != address(0), \"Invalid address zero for owner\");\r\n        require(spender != address(0), \"Invalid address zero for spender\");\r\n        require(amount > 0, \"Invalid amount\");\r\n\r\n        uint256 spenderAllowance = allowances[owner][spender];\r\n        require(spenderAllowance >= amount, \"Insufficient allowance\");\r\n        require(balances[owner] >= amount, \"Insufficient owner balance\");\r\n\r\n        allowances[owner][spender] -= amount;\r\n\r\n        balances[owner] -= amount;\r\n        balances[spender] += amount;\r\n\r\n        emit Events.TransferFrom(owner, spender, amount);\r\n        return true;\r\n    }\r\n\r\n    function allowance(address owner, address spender) external view returns (uint256) {\r\n        return allowances[owner][spender];\r\n    }\r\n\r\n    function approve(address spender, uint256 amount) external returns (bool) {\r\n        require(spender != address(0), \"Invalid address zero detected\");\r\n\r\n        allowances[msg.sender][spender] = amount;\r\n        emit Events.Approve(msg.sender, spender, amount);\r\n        return true;\r\n    }\r\n\r\n    function name() external view returns (string memory) {\r\n        return tokenName;\r\n    }\r\n\r\n    function symbol() external view returns (string memory) {\r\n        return tokenSymbol;\r\n    }\r\n\r\n    function mint(address receiver, uint256 amount) external {\r\n        require(receiver != address(0), \"Invalid address zero detected\");\r\n        balances[receiver] += amount;\r\n    }\r\n}\r\n"
+      }
+    }
+  }
+}

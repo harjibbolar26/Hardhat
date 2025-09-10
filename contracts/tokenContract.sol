@@ -37,8 +37,8 @@ contract TokenContract {
         address spender,
         uint256 amount
     ) external returns (bool) {
-        require(owner != address(0), "Invalid address zero");
-        require(spender != address(0), "Invalid address zero");
+        require(owner != address(0), "Invalid address zero for owner");
+        require(spender != address(0), "Invalid address zero for spender");
         require(amount > 0, "Invalid amount");
 
         uint256 spenderAllowance = allowances[owner][spender];
